@@ -1,24 +1,19 @@
 package org.jeecg.modules.system.controller;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.shiro.authz.annotation.RequiresRoles;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.constant.CacheConstant;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.util.PmsUtil;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.system.entity.SysPermission;
 import org.jeecg.modules.system.entity.SysPermissionDataRule;
@@ -29,33 +24,20 @@ import org.jeecg.modules.system.service.ISysPermissionDataRuleService;
 import org.jeecg.modules.system.service.ISysPermissionService;
 import org.jeecg.modules.system.service.ISysRolePermissionService;
 import org.jeecg.modules.system.service.ISysRoleService;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import org.jeecg.common.system.vo.LoginUser;
-import org.apache.shiro.SecurityUtils;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * <p>
@@ -68,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/sys/role")
 @Slf4j
+@Api(tags = "角色表")
 public class SysRoleController {
 	@Autowired
 	private ISysRoleService sysRoleService;
@@ -90,6 +73,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	@ApiOperation(value = "角色表-分页列表查询", notes = "角色表-分页列表查询")
 	public Result<IPage<SysRole>> queryPageList(SysRole role,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
@@ -109,6 +93,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
+	@ApiOperation(value = "角色表-添加", notes = "角色表-添加")
 	public Result<SysRole> add(@RequestBody SysRole role) {
 		Result<SysRole> result = new Result<SysRole>();
 		try {
@@ -128,6 +113,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/edit", method = RequestMethod.PUT)
+	@ApiOperation(value = "角色表-编辑", notes = "角色表-编辑")
 	public Result<SysRole> edit(@RequestBody SysRole role) {
 		Result<SysRole> result = new Result<SysRole>();
 		SysRole sysrole = sysRoleService.getById(role.getId());
@@ -151,6 +137,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
+	@ApiOperation(value = "角色表-删除", notes = "角色表-删除")
 	public Result<SysRole> delete(@RequestParam(name="id",required=true) String id) {
 		Result<SysRole> result = new Result<SysRole>();
 		SysRole sysrole = sysRoleService.getById(id);
@@ -172,6 +159,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
+	@ApiOperation(value = "角色表-批量删除", notes = "角色表-批量删除")
 	public Result<SysRole> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<SysRole> result = new Result<SysRole>();
 		if(ids==null || "".equals(ids.trim())) {
@@ -189,6 +177,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/queryById", method = RequestMethod.GET)
+	@ApiOperation(value = "角色表-通过id查询", notes = "角色表-通过id查询")
 	public Result<SysRole> queryById(@RequestParam(name="id",required=true) String id) {
 		Result<SysRole> result = new Result<SysRole>();
 		SysRole sysrole = sysRoleService.getById(id);
@@ -202,6 +191,7 @@ public class SysRoleController {
 	}
 	
 	@RequestMapping(value = "/queryall", method = RequestMethod.GET)
+	@ApiOperation(value = "角色表-查询所有", notes = "角色表-查询所有")
 	public Result<List<SysRole>> queryall() {
 		Result<List<SysRole>> result = new Result<>();
 		List<SysRole> list = sysRoleService.list();
@@ -218,6 +208,7 @@ public class SysRoleController {
 	  * 校验角色编码唯一
 	 */
 	@RequestMapping(value = "/checkRoleCode", method = RequestMethod.GET)
+	@ApiOperation(value = "角色表-校验角色编码唯一", notes = "角色表-校验角色编码唯一")
 	public Result<Boolean> checkUsername(String id,String roleCode) {
 		Result<Boolean> result = new Result<>();
 		result.setResult(true);//如果此参数为false则程序发生异常
@@ -258,6 +249,7 @@ public class SysRoleController {
 	 * @param response
 	 */
 	@RequestMapping(value = "/exportXls")
+	@ApiOperation(value = "角色表-导出excel", notes = "角色表-导出excel")
 	public ModelAndView exportXls(SysRole sysRole,HttpServletRequest request) {
 		// Step.1 组装查询条件
 		QueryWrapper<SysRole> queryWrapper = QueryGenerator.initQueryWrapper(sysRole, request.getParameterMap());
@@ -280,6 +272,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	@ApiOperation(value = "角色表-通过excel导入数据", notes = "角色表-通过excel导入数据")
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
@@ -309,6 +302,7 @@ public class SysRoleController {
 	 * 查询数据规则数据
 	 */
 	@GetMapping(value = "/datarule/{permissionId}/{roleId}")
+	@ApiOperation(value = "角色表-查询数据规则数据", notes = "角色表-查询数据规则数据")
 	public Result<?> loadDatarule(@PathVariable("permissionId") String permissionId,@PathVariable("roleId") String roleId) {
 		List<SysPermissionDataRule> list = sysPermissionDataRuleService.getPermRuleListByPermId(permissionId);
 		if(list==null || list.size()==0) {
@@ -337,6 +331,7 @@ public class SysRoleController {
 	 * 保存数据规则至角色菜单关联表
 	 */
 	@PostMapping(value = "/datarule")
+	@ApiOperation(value = "角色表-保存数据规则至角色菜单关联表", notes = "角色表-保存数据规则至角色菜单关联表")
 	public Result<?> saveDatarule(@RequestBody JSONObject jsonObject) {
 		try {
 			String permissionId = jsonObject.getString("permissionId");
@@ -367,6 +362,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
+	@ApiOperation(value = "角色表-用户角色授权功能，查询菜单权限树", notes = "角色表-用户角色授权功能，查询菜单权限树")
 	public Result<Map<String,Object>> queryTreeList(HttpServletRequest request) {
 		Result<Map<String,Object>> result = new Result<>();
 		//全部权限ids

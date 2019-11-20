@@ -1,15 +1,14 @@
 package org.jeecg.modules.system.controller;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.constant.CacheConstant;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.common.util.MD5Util;
@@ -24,20 +23,10 @@ import org.jeecg.modules.system.service.ISysPermissionService;
 import org.jeecg.modules.system.service.ISysRolePermissionService;
 import org.jeecg.modules.system.util.PermissionDataUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -49,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RestController
+@Api(tags = "菜单权限表")
 @RequestMapping("/sys/permission")
 public class SysPermissionController {
 
@@ -66,6 +56,7 @@ public class SysPermissionController {
 	 * 
 	 * @return
 	 */
+	@ApiOperation(value = "加载数据节点", notes = "加载数据节点")
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<List<SysPermissionTree>> list() {
         long start = System.currentTimeMillis();
@@ -92,6 +83,7 @@ public class SysPermissionController {
 	 *
 	 * @return
 	 */
+	@ApiOperation(value = "系统菜单列表(一级菜单)", notes = "系统菜单列表(一级菜单)")
 	@RequestMapping(value = "/getSystemMenuList", method = RequestMethod.GET)
 	public Result<List<SysPermissionTree>> getSystemMenuList() {
         long start = System.currentTimeMillis();
@@ -122,6 +114,7 @@ public class SysPermissionController {
 	 * @param parentId
 	 * @return
 	 */
+	@ApiOperation(value = "查询子菜单", notes = "查询子菜单")
 	@RequestMapping(value = "/getSystemSubmenu", method = RequestMethod.GET)
 	public Result<List<SysPermissionTree>> getSystemSubmenu(@RequestParam("parentId") String parentId){
 		Result<List<SysPermissionTree>> result = new Result<>();
@@ -172,6 +165,7 @@ public class SysPermissionController {
 	 * 
 	 * @return
 	 */
+	@ApiOperation(value = "查询用户拥有的菜单权限和按钮权限（根据TOKEN）", notes = "查询用户拥有的菜单权限和按钮权限（根据TOKEN）")
 	@RequestMapping(value = "/getUserPermissionByToken", method = RequestMethod.GET)
 	public Result<?> getUserPermissionByToken(@RequestParam(name = "token", required = true) String token) {
 		Result<JSONObject> result = new Result<JSONObject>();
@@ -213,6 +207,7 @@ public class SysPermissionController {
 	 * @param permission
 	 * @return
 	 */
+	@ApiOperation(value = "添加菜单", notes = "添加菜单")
 	@RequiresRoles({ "admin" })
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public Result<SysPermission> add(@RequestBody SysPermission permission) {
@@ -233,6 +228,7 @@ public class SysPermissionController {
 	 * @param permission
 	 * @return
 	 */
+	@ApiOperation(value = "编辑菜单", notes = "编辑菜单")
 	@RequiresRoles({ "admin" })
 	@RequestMapping(value = "/edit", method = { RequestMethod.PUT, RequestMethod.POST })
 	public Result<SysPermission> edit(@RequestBody SysPermission permission) {
@@ -253,6 +249,7 @@ public class SysPermissionController {
 	 * @param id
 	 * @return
 	 */
+	@ApiOperation(value = "删除菜单", notes = "删除菜单")
 	@RequiresRoles({ "admin" })
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public Result<SysPermission> delete(@RequestParam(name = "id", required = true) String id) {
@@ -273,6 +270,7 @@ public class SysPermissionController {
 	 * @param ids
 	 * @return
 	 */
+	@ApiOperation(value = "批量删除菜单", notes = "批量删除菜单")
 	@RequiresRoles({ "admin" })
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	public Result<SysPermission> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
@@ -297,6 +295,7 @@ public class SysPermissionController {
 	 * 
 	 * @return
 	 */
+	@ApiOperation(value = "获取全部的权限树", notes = "获取全部的权限树")
 	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
 	public Result<Map<String, Object>> queryTreeList() {
 		Result<Map<String, Object>> result = new Result<>();
@@ -329,6 +328,7 @@ public class SysPermissionController {
 	 * 
 	 * @return
 	 */
+	@ApiOperation(value = "异步加载数据节点", notes = "异步加载数据节点")
 	@RequestMapping(value = "/queryListAsync", method = RequestMethod.GET)
 	public Result<List<TreeModel>> queryAsync(@RequestParam(name = "pid", required = false) String parentId) {
 		Result<List<TreeModel>> result = new Result<>();
@@ -352,6 +352,7 @@ public class SysPermissionController {
 	 * 
 	 * @return
 	 */
+	@ApiOperation(value = "查询角色授权", notes = "查询角色授权")
 	@RequestMapping(value = "/queryRolePermission", method = RequestMethod.GET)
 	public Result<List<String>> queryRolePermission(@RequestParam(name = "roleId", required = true) String roleId) {
 		Result<List<String>> result = new Result<>();
@@ -370,6 +371,7 @@ public class SysPermissionController {
 	 * 
 	 * @return
 	 */
+	@ApiOperation(value = "保存角色授权", notes = "保存角色授权")
 	@RequestMapping(value = "/saveRolePermission", method = RequestMethod.POST)
 	@RequiresRoles({ "admin" })
 	public Result<String> saveRolePermission(@RequestBody JSONObject json) {
@@ -600,10 +602,7 @@ public class SysPermissionController {
 	 * @return
 	 */
 	private boolean isWWWHttpUrl(String url) {
-		if (url != null && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("{{"))) {
-			return true;
-		}
-		return false;
+		return url != null && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("{{"));
 	}
 
 	/**
